@@ -5,14 +5,12 @@ import EthereumProvider from "@walletconnect/ethereum-provider";
 const TOKEN_ADDRESS = "0xfa4C07636B53D868E514777B9d4005F1e9c6c40B";
 const GAME_CONTRACT = "0x6CB90Df0fCB1D29EdEDC988d94E969395d49f321";
 
-// Bob4.0 Token ABI
 const TOKEN_ABI = [
   "function balanceOf(address owner) view returns (uint256)",
   "function decimals() view returns (uint8)",
   "function approve(address spender, uint256 amount) returns (bool)"
 ];
 
-// Poker Game Contract ABI
 const GAME_ABI = [
   {
     "anonymous": false,
@@ -50,10 +48,9 @@ function PokerGame() {
 
   useEffect(() => {
     if (signer && address) getBalance();
-    // eslint-disable-next-line
   }, [signer, address]);
 
-  // 🔗 Connect with MetaMask
+  // Connect MetaMask
   async function connectMetaMask() {
     try {
       if (window.ethereum) {
@@ -72,16 +69,14 @@ function PokerGame() {
     }
   }
 
-  // 🔗 Connect with WalletConnect v2
+  // Connect WalletConnect v2
   async function connectWalletConnect() {
     try {
       const walletConnectProvider = await EthereumProvider.init({
-        projectId: "YOUR_PROJECT_ID", // 🔑 ottieni da https://cloud.walletconnect.com
-        chains: [56], // BSC Mainnet
+        projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID,
+        chains: [56],
         showQrModal: true,
-        rpcMap: {
-          56: "https://bsc-dataseed.binance.org/"
-        }
+        rpcMap: { 56: "https://bsc-dataseed.binance.org/" }
       });
 
       await walletConnectProvider.enable();
@@ -98,20 +93,20 @@ function PokerGame() {
     }
   }
 
-  // 📊 Bob4.0 Token Balance
+  // Get Bob4.0 token balance
   async function getBalance() {
     try {
       const contract = new ethers.Contract(TOKEN_ADDRESS, TOKEN_ABI, provider);
       const decimals = await contract.decimals();
       setTokenDecimals(decimals);
-      const balance = await contract.balanceOf(address);
-      setBalance(Number(ethers.formatUnits(balance, decimals)));
+      const bal = await contract.balanceOf(address);
+      setBalance(Number(ethers.formatUnits(bal, decimals)));
     } catch (err) {
       setStatus("Error reading balance: " + err.message);
     }
   }
 
-  // 🃏 Play Poker
+  // Play Poker
   async function playPoker() {
     if (!signer || !address) return setStatus("Connect your wallet!");
     if (balance < 100) return setStatus("Insufficient Bob4.0 balance!");
@@ -120,20 +115,17 @@ function PokerGame() {
     setLastResult(null);
 
     try {
-      // Approve Game Contract to spend 100 Bob4.0
       const tokenContract = new ethers.Contract(TOKEN_ADDRESS, TOKEN_ABI, signer);
       const amount = ethers.parseUnits("100", tokenDecimals);
       const approveTx = await tokenContract.approve(GAME_CONTRACT, amount);
       await approveTx.wait();
 
-      // Interact with Game Contract
       const gameContract = new ethers.Contract(GAME_CONTRACT, GAME_ABI, signer);
       const playTx = await gameContract.playCard(amount);
       const receipt = await playTx.wait();
 
       setStatus("Game played! Check your wallet and history.");
-      let won = null;
-      let playerCard = null, houseCard = null;
+      let won = null, playerCard = null, houseCard = null;
 
       if (receipt && receipt.logs) {
         for (let log of receipt.logs) {
@@ -145,7 +137,7 @@ function PokerGame() {
               houseCard = parsed.args.houseCardId;
               break;
             }
-          } catch { }
+          } catch {}
         }
       }
 
@@ -190,3 +182,4 @@ function PokerGame() {
 }
 
 export default PokerGame;
+            
