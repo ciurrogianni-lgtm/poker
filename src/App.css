@@ -1,0 +1,71 @@
+body {
+  background: #f2f2d0;
+  font-family: 'Arial Rounded MT Bold', Arial, sans-serif;
+}
+.container {
+  max-width: 480px;
+  margin: auto;
+  padding: 2rem;
+  background: #fffde7;
+  border-radius: 18px;
+  box-shadow: 0 0 16px #cdbb65;
+}
+.logo {
+  width: 120px;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+}
+header h1 {
+  color: #ad9700;
+  margin-bottom: 0.5rem;
+}
+.buy-link {
+  background: #ffe100;
+  padding: 0.4em 1em;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #222;
+  font-weight: bold;
+  margin-bottom: 1em;
+  display: inline-block;
+}
+.poker-box {
+  padding: 1em;
+  background: #faf7c2;
+  border-radius: 9px;
+  text-align: center;
+  margin-top: 2em;
+}
+button {
+  background: #ad9700;
+  color: #fff;
+  padding: 0.7em 1.2em;
+  border: none;
+  border-radius: 7px;
+  font-size: 1.1em;
+  margin: 0.5em;
+  cursor: pointer;
+}
+.result {
+  font-size: 1.2em;
+  color: #2e7300;
+  margin-top: 1em;
+}
+.status {
+  color: #ad9700;
+  margin-top: 0.5em;
+}
+footer {
+  margin-top: 2em;
+  color: #7a7a7a;
+  font-size: 0.95em;
+  text-align: center;
+}
+@media (max-width: 600px) {
+  .container {
+    padding: 1rem;
+  }
+  .logo {
+    width: 80px;
+  }
+}
