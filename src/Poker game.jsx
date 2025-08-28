@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { ethers } from 'ethers';
-import WalletConnectProvider from "@walletconnect/web3-provider";
+import { useState, useEffect } from "react";
+import { ethers } from "ethers";
+import EthereumProvider from "@walletconnect/ethereum-provider";
 
 const TOKEN_ADDRESS = "0xfa4C07636B53D868E514777B9d4005F1e9c6c40B";
 const GAME_CONTRACT = "0x6CB90Df0fCB1D29EdEDC988d94E969395d49f321";
@@ -15,11 +15,6 @@ const TOKEN_ABI = [
 // Poker Game Contract ABI
 const GAME_ABI = [
   {
-    "inputs": [],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
     "anonymous": false,
     "inputs": [
       { "indexed": false, "internalType": "address", "name": "player", "type": "address" },
@@ -30,13 +25,6 @@ const GAME_ABI = [
     ],
     "name": "GamePlayed",
     "type": "event"
-  },
-  {
-    "inputs": [],
-    "name": "bobToken",
-    "outputs": [{ "internalType": "contract IERC20", "name": "", "type": "address" }],
-    "stateMutability": "view",
-    "type": "function"
   },
   { "inputs": [], "name": "maxBet", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" },
   { "inputs": [], "name": "minBet", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" },
@@ -65,7 +53,7 @@ function PokerGame() {
     // eslint-disable-next-line
   }, [signer, address]);
 
-  // Connect with MetaMask
+  // 🔗 Connect with MetaMask
   async function connectMetaMask() {
     try {
       if (window.ethereum) {
@@ -75,35 +63,42 @@ function PokerGame() {
         setProvider(ethersProvider);
         setSigner(signer);
         setAddress(await signer.getAddress());
-        setStatus("Wallet connected!");
+        setStatus("MetaMask connected!");
       } else {
-        setStatus("MetaMask not found. Use WalletConnect for mobile.");
+        setStatus("MetaMask not found. Try WalletConnect.");
       }
     } catch (err) {
       setStatus("Connection error: " + err.message);
     }
   }
 
-  // Connect with WalletConnect
+  // 🔗 Connect with WalletConnect v2
   async function connectWalletConnect() {
     try {
-      const walletConnectProvider = new WalletConnectProvider({
-        rpc: { 56: "https://bsc-dataseed.binance.org/" },
-        chainId: 56,
+      const walletConnectProvider = await EthereumProvider.init({
+        projectId: "YOUR_PROJECT_ID", // 🔑 ottieni da https://cloud.walletconnect.com
+        chains: [56], // BSC Mainnet
+        showQrModal: true,
+        rpcMap: {
+          56: "https://bsc-dataseed.binance.org/"
+        }
       });
+
       await walletConnectProvider.enable();
+
       const ethersProvider = new ethers.BrowserProvider(walletConnectProvider, "any");
       const signer = await ethersProvider.getSigner();
+
       setProvider(ethersProvider);
       setSigner(signer);
       setAddress(await signer.getAddress());
-      setStatus("Mobile wallet connected!");
+      setStatus("WalletConnect v2 connected!");
     } catch (err) {
       setStatus("WalletConnect error: " + err.message);
     }
   }
 
-  // Bob4.0 Token Balance and Decimals
+  // 📊 Bob4.0 Token Balance
   async function getBalance() {
     try {
       const contract = new ethers.Contract(TOKEN_ADDRESS, TOKEN_ABI, provider);
@@ -116,7 +111,7 @@ function PokerGame() {
     }
   }
 
-  // Play Poker
+  // 🃏 Play Poker
   async function playPoker() {
     if (!signer || !address) return setStatus("Connect your wallet!");
     if (balance < 100) return setStatus("Insufficient Bob4.0 balance!");
@@ -139,7 +134,7 @@ function PokerGame() {
       setStatus("Game played! Check your wallet and history.");
       let won = null;
       let playerCard = null, houseCard = null;
-      // Look for GamePlayed event
+
       if (receipt && receipt.logs) {
         for (let log of receipt.logs) {
           try {
@@ -153,13 +148,17 @@ function PokerGame() {
           } catch { }
         }
       }
+
       if (won !== null) {
-        setLastResult(won
-          ? `You won! Player card: ${playerCard} - House card: ${houseCard}`
-          : `You lost. Player card: ${playerCard} - House card: ${houseCard}`);
+        setLastResult(
+          won
+            ? `🎉 You won! Player card: ${playerCard} - House card: ${houseCard}`
+            : `😢 You lost. Player card: ${playerCard} - House card: ${houseCard}`
+        );
       } else {
         setLastResult("Result available in events on BscScan.");
       }
+
       getBalance();
     } catch (err) {
       setStatus("Error: " + err.message);
@@ -170,15 +169,19 @@ function PokerGame() {
     <section className="poker-box">
       <div>
         <button onClick={connectMetaMask}>Connect MetaMask</button>
-        <button onClick={connectWalletConnect}>Connect WalletConnect (Mobile)</button>
+        <button onClick={connectWalletConnect}>Connect WalletConnect (v2)</button>
       </div>
       {address && <div>Wallet: {address}</div>}
       <div>Bob4.0 Balance: {balance}</div>
       <button onClick={playPoker}>Play Poker (100 Bob4.0)</button>
       {status && <div className="status">{status}</div>}
       {lastResult && <div className="result">{lastResult}</div>}
-      <div style={{marginTop:'1em'}}>
-        <a href="https://bscscan.com/address/0x6cb90df0fcb1d29ededc988d94e969395d49f321#events" target="_blank" rel="noopener noreferrer">
+      <div style={{ marginTop: "1em" }}>
+        <a
+          href="https://bscscan.com/address/0x6cb90df0fcb1d29ededc988d94e969395d49f321#events"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           Results & history on BscScan
         </a>
       </div>
