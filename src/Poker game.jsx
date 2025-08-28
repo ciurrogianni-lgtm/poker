@@ -50,7 +50,6 @@ function PokerGame() {
     if (signer && address) getBalance();
   }, [signer, address]);
 
-  // Connect MetaMask
   async function connectMetaMask() {
     try {
       if (window.ethereum) {
@@ -69,7 +68,6 @@ function PokerGame() {
     }
   }
 
-  // Connect WalletConnect v2
   async function connectWalletConnect() {
     try {
       const walletConnectProvider = await EthereumProvider.init({
@@ -80,7 +78,6 @@ function PokerGame() {
       });
 
       await walletConnectProvider.enable();
-
       const ethersProvider = new ethers.BrowserProvider(walletConnectProvider, "any");
       const signer = await ethersProvider.getSigner();
 
@@ -93,7 +90,6 @@ function PokerGame() {
     }
   }
 
-  // Get Bob4.0 token balance
   async function getBalance() {
     try {
       const contract = new ethers.Contract(TOKEN_ADDRESS, TOKEN_ABI, provider);
@@ -106,7 +102,6 @@ function PokerGame() {
     }
   }
 
-  // Play Poker
   async function playPoker() {
     if (!signer || !address) return setStatus("Connect your wallet!");
     if (balance < 100) return setStatus("Insufficient Bob4.0 balance!");
@@ -182,4 +177,3 @@ function PokerGame() {
 }
 
 export default PokerGame;
-            
